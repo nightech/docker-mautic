@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+CMD="$@"
+PIDFILE="/tmp/.wrapper-`echo ${CMD} | sed 's/\//-/g'`.pid"
+
+msgOut () { echo "`date +%Y-%m-%d\ %H:%M:%S`  INFO Job '$CMD' $1"; }
+msgErr () { (>&2 echo "`date +%Y-%m-%d\ %H:%M:%S` ERROR Job '$CMD' $1" ) }
+execOut () {  awk -v CMD="$CMD" '{ print strftime("%Y-%m-%d %H:%M:%S"), " INFO Job '\''"CMD"'\''", $0; fflush(); }' ; }
+execErr () { (>&2 awk -v CMD="$CMD" '{ print strftime("%Y-%m-%d %H:%M:%S"), "ERROR Job '\''"CMD"'\''", $0; fflush(); }' ) }
+
+if [ -f "${PIDFILE}" ]; then
+    # Is the process is actually still running under this pid?
+    OLDPID=`cat "${PIDFILE}"`
+    RESULT=`ps -ef | grep ${OLDPID} | grep -v grep | grep "${CMD}"`
+
+    if [ -n "${RESULT}" ]; then
+        # exit 0, because it's OK to find another instance.
+        # we are exiting because we found a pid file and the process is still
+        # running, so it isn't time to starte the script again yet.
+        msgOut "Process is running"
+        exit 0
+    else
+        msgOut "Pid left but no process was running"
+    fi
+fi
+
+
+# Find process id of this script and update the pidfile
+PID="$$"
+echo ${PID} > "${PIDFILE}"
+
+msgOut "Started"
+
+# "$@"
+ # { { env - `cat /tmp/.env` /bin/bash -c $1 } 2>&3; } 2>&3 | msgErr; } 3>&1 1>&2 | msgOut
+
+{ { "$@"; } 2>&3 | \
+    execOut; } 3>&1 1>&2 | execErr
+
+RETVAL="$?"
+
+# if the script failed, return its exit status and exit
+if [ ${RETVAL} -ne 0 ]; then
+    exit 1
+    msgErr "Ended with status ${RETVAL}"
+fi
+
+msgOut "Ended with status ${RETVAL}"
+
+# We're done, remove the pidfile
+if [ -f "${PIDFILE}" ]; then
+    rm "${PIDFILE}"
+fi
+
+exit 0

@@ -1,0 +1,44 @@
+version: '2'
+
+volumes:
+  mysql-data:
+    driver: local
+  mautic-data:
+    driver: local
+
+services:
+  mysql:
+    image: mariadb:10.1
+    environment:
+      MYSQL_DATABASE: mautic
+      MYSQL_USER: mautic
+      MYSQL_PASSWORD: mautic
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  nginx:
+    build:
+      context: ./nginx/
+    volumes_from:
+      - mautic:ro
+    ports:
+      - "8080:80"
+    links:
+      - mautic
+
+  mautic:
+    # image: nightech/mautic:php-fpm
+    build:
+      context: ./mautic/
+    volumes:
+      - mautic-data:/var/www/mautic/volumes
+    links:
+      - mysql
+
+  mautic-cron:
+    image: nightech/mautic:cron
+    volumes_from:
+      - mautic
+    links:
+      - mysql

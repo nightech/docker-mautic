@@ -1,0 +1,27 @@
+!stdout(true),timezone(Europe/Paris),runas(www-data)
+
+#
+# https://mautic.org/docs/en/setup/cron_jobs.html
+#
+
+# Segments - Required
+0,15,30,45 * * * * /usr/local/bin/wrapper /usr/local/bin/php /var/www/mautic/app/console mautic:segments:update
+
+# Campaign - Required
+2,17,32,47 * * * * /usr/local/bin/wrapper /usr/local/bin/php /var/www/mautic/app/console mautic:campaigns:rebuild
+4,19,34,49 * * * * /usr/local/bin/wrapper /usr/local/bin/php /var/www/mautic/app/console mautic:campaigns:trigger
+6,21,36,51 * * * * /usr/local/bin/wrapper /usr/local/bin/php /var/www/mautic/app/console mautic:messages:send
+
+# Email Queue & Bounce
+8,23,38,53 * * * * /usr/local/bin/wrapper /usr/local/bin/php /var/www/mautic/app/console mautic:emails:send
+10,25,40,55 * * * * /usr/local/bin/wrapper /usr/local/bin/php /var/www/mautic/app/console mautic:email:fetch
+
+# Social Monitoring
+12,27,42,57 * * * * /usr/local/bin/wrapper /usr/local/bin/php /var/www/mautic/app/console mautic:social:monitoring
+14,29,44,59 * * * * /usr/local/bin/wrapper /usr/local/bin/php /var/www/mautic/app/console mautic:webhooks:process
+
+# Broadcast
+0,15,30,45 * * * * /usr/local/bin/wrapper /usr/local/bin/php /var/www/mautic/app/console mautic:broadcasts:send
+
+# MaxMind
+25 2 * * * /usr/local/bin/wrapper /usr/local/bin/php /var/www/mautic/app/console mautic:iplookup:download
