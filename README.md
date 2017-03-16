@@ -1,6 +1,6 @@
 # Docker Mautic
 
-Dockerfile for Mautic 2.6.0
+Dockerfile for Mautic 2.7.1
 
 ## Features
 * `docker-composer up --build` file for quickstart
