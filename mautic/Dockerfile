@@ -8,7 +8,7 @@ ENV EXT_REDIS "on"
 ENV EXT_SOCKETS "on"
 ENV EXT_ZIP "on"
 
-ENV MAUTIC_VERSION 2.7.1
+ENV MAUTIC_VERSION 2.8.0
 
 RUN /usr/local/bin/docker-entrypoint.sh
 
